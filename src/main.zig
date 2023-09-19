@@ -1,6 +1,6 @@
 const std = @import("std");
 const fmt = std.fmt;
-const naemon = @import("./naemon.zig");
+const naemon = @import("naemon");
 
 export const __neb_api_version: c_int = naemon.CURRENT_NEB_API_VERSION;
 

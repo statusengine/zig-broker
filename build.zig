@@ -15,15 +15,24 @@ pub fn build(b: *std.Build) void {
     // set a preferred release mode, allowing the user to decide how to optimize.
     const optimize = b.standardOptimizeOption(.{});
 
-    //const naemon_header = b.option([]const u8, "naemon_header", "Path to naemon header") orelse "/opt/naemon/include/naemon/naemon.h";
-    //const glib_include_path = b.option([]const u8, "glib_include_path", "Path to glib2.0 include dir") orelse "/usr/include/glib-2.0/";
+    const naemon_header_path = b.option([]const u8, "naemon_header_path", "Path to naemon include dir") orelse "build/include/naemon";
+    const glib_include_path = b.option([]const u8, "glib_include_path", "Path to glib2.0 include dir") orelse "/usr/include/glib-2.0/";
+    const glib_config_include_path = b.option([]const u8, "glib_config_include_path", "Path to glib2.0 glibconfig include dir") orelse "/usr/lib/x86_64-linux-gnu/glib-2.0/include/";
 
-    //const naemon_module = b.addTranslateC(.{
-    //    .optimize = optimize,
-    //    .target = target,
-    //    .source_file = .{ .path = naemon_header },
-    //});
-    //try naemon_module.include_dirs.append(glib_include_path);
+    const naemon_header = std.fmt.allocPrint(b.allocator, "{s}/naemon.h", .{naemon_header_path}) catch {
+        unreachable;
+    };
+    defer b.allocator.free(naemon_header);
+
+    const naemon_module = b.addTranslateC(.{
+        .optimize = optimize,
+        .target = target,
+        .source_file = .{ .path = naemon_header },
+    });
+    naemon_module.include_dirs.append(glib_include_path) catch {};
+    naemon_module.include_dirs.append(glib_config_include_path) catch {};
+    naemon_module.include_dirs.append(naemon_header_path) catch {};
+    naemon_module.include_dirs.append("/usr/include/x86_64-linux-gnu/") catch {};
 
     const lib = b.addSharedLibrary(.{
         .name = "zig-broker",
@@ -35,7 +44,7 @@ pub fn build(b: *std.Build) void {
     });
     lib.linkLibC();
 
-    //lib.addModule("naemon", naemon_module.createModule());
+    lib.addModule("naemon", naemon_module.createModule());
 
     // This declares intent for the library to be installed into the standard
     // location when the user invokes the "install" step (the default step when
