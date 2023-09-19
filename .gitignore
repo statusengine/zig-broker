@@ -1,0 +1,7 @@
+/naemon-core
+/build
+/zig-cache
+/zig-out
+/.idea
+._*
+src/naemon.zig

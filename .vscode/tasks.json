@@ -1,0 +1,125 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+		{
+            "label": "download-naemon",
+            "type": "shell",
+            "command": "if [ ! -d 'naemon-core' ]; then git clone https://github.com/naemon/naemon-core.git naemon-core; fi",
+            "problemMatcher": [],
+            "group": {
+                "kind":"build",
+                "isDefault": false
+            }
+        },
+        {
+            "label": "autogen",
+            "type": "shell",
+            "command": "${cwd}/naemon-core/autogen.sh --prefix=${cwd}/build --with-naemon-user=$(whoami) --with-naemon-group=users --with-pluginsdir=/usr/lib/nagios/plugins",
+            "problemMatcher": [],
+            "group": {
+                "kind":"build",
+                "isDefault": false
+            },
+			"options": {
+				"cwd": "${cwd}/naemon-core/"
+			}
+        },
+        {
+            "label": "make",
+            "type": "shell",
+            "command": "make -j",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+			"options": {
+				"cwd": "${cwd}/naemon-core/"
+			}
+        },
+        {
+            // Will create all required directories
+            "label": "mkdir",
+            "type": "shell",
+            "command": "mkdir -p ${cwd}/build/var/cache/naemon ${cwd}/build/var/spool/checkresults ${cwd}/build/etc/naemon/module-conf.d",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+        },
+        {
+            // This will install the required default configuration files
+            "label": "make install",
+            "type": "shell",
+            "command": "make install",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+			"options": {
+				"cwd": "${cwd}/naemon-core/"
+			}
+        },
+		{
+            // Translate Naemon broker headers to Zig
+            "label": "translate-header",
+            "type": "shell",
+            "command": "/usr/local/zig/zig translate-c ${cwd}/build/include/naemon/naemon.h -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include -I${cwd}/build/include -I/usr/include -I/usr/include/x86_64-linux-gnu/ > ${cwd}/src/naemon.zig",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            }
+        },
+        {
+            // Add the zig Broker to Naemon config
+            "label": "load-broker-module",
+            "type": "shell",
+            "command": "mkdir -p ${cwd}/build/etc/naemon/module-conf.d && echo 'broker_module=${cwd}/zig-out/lib/libzig-broker.a' > ${cwd}/build/etc/naemon/module-conf.d/broker.cfg",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+        },
+        {
+            // Initial - Run this task, if you cloed the naemon source code from GitHub and want to start developing
+            // You only need to execute this task once
+            "label": "initial",
+            "type": "shell",
+            "command": "make install",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+			"options": {
+				"cwd": "${cwd}/naemon-core/"
+			},
+            "dependsOrder": "sequence",
+            "dependsOn":[
+				"download-naemon",
+				"autogen",
+                "make",
+                "make install",
+                "mkdir",
+				"translate-header",
+                "load-broker-module",
+            ]
+        },
+		{
+            "label": "build",
+            "type": "shell",
+            "command": "/usr/local/zig/zig build",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}
