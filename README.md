@@ -59,3 +59,16 @@ This task will automatically do the following things for you:
 - Load the zig broker module into naemon
 
 Now you are ready to start development
+
+
+## Debugger
+
+For debugging, please make sure you have the [Zig Language](https://marketplace.visualstudio.com/items?itemName=ziglang.vscode-zig) extension installed.
+Also make sure to install the `Zig Language Server` by pressing `ctrl` + `p` and type: `>Zig Language Server: Install Server`
+
+You can now debug the Zig code
+![debug zig broker](/docs/debug_zig_broker.png)
+
+And also the Naemon Code if required
+![debug Naemon code](/docs/debug_naemon.png)
+

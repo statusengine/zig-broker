@@ -5,3 +5,4 @@
 /.idea
 ._*
 src/naemon.zig
+core

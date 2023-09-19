@@ -79,7 +79,7 @@
             // Add the zig Broker to Naemon config
             "label": "load-broker-module",
             "type": "shell",
-            "command": "mkdir -p ${cwd}/build/etc/naemon/module-conf.d && echo 'broker_module=${cwd}/zig-out/lib/libzig-broker.a' > ${cwd}/build/etc/naemon/module-conf.d/broker.cfg",
+            "command": "mkdir -p ${cwd}/build/etc/naemon/module-conf.d && echo 'broker_module=${cwd}/zig-out/lib/libzig-broker.so' > ${cwd}/build/etc/naemon/module-conf.d/broker.cfg",
             "problemMatcher": [],
             "group": {
                 "kind": "build",
