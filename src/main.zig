@@ -17,26 +17,24 @@ export fn nebmodule_init(_: c_int, _: [*]c_char, handle: *naemon.nebmodule) c_in
 
     naemon.nm_log(naemon.NSLOG_INFO_MESSAGE, "Naemon Event Broker written in Zig");
 
-    _ = naemon.neb_register_callback(naemon.NEBCALLBACK_SERVICE_STATUS_DATA, broker_handle, 0, handle_service_check_data);
+    _ = naemon.neb_register_callback(naemon.NEBCALLBACK_SERVICE_CHECK_DATA, broker_handle, 0, handle_service_check_data);
 
     return 0;
 }
 
 export fn nebmodule_deinit(_: c_int, reason: c_int) c_int {
-    _ = naemon.neb_deregister_callback(naemon.NEBCALLBACK_SERVICE_STATUS_DATA, broker_handle);
+    _ = naemon.neb_deregister_callback(naemon.NEBCALLBACK_SERVICE_CHECK_DATA, broker_handle);
 
     naemon.nm_log(naemon.NSLOG_RUNTIME_ERROR, "bye from zig");
     _ = reason;
     return 0;
 }
 
-pub fn handle_service_check_data(event_type: c_int, data: ?*anyopaque) callconv(.C) c_int {
-    _ = event_type;
+pub fn handle_service_check_data(_: c_int, data: ?*anyopaque) callconv(.C) c_int {
 
-    var service_check: ?*naemon.nebstruct_service_check_data = @ptrCast(@alignCast(data));
-
-    if (service_check) |sc| {
-        naemon.nm_log(naemon.NSLOG_RUNTIME_ERROR, "Got service check from service: '%s'!", sc.service_description);
+    if (data) |ndata| {
+        var service_check: *naemon.nebstruct_service_check_data = @ptrCast(@alignCast(ndata));
+        naemon.nm_log(naemon.NSLOG_RUNTIME_ERROR, "Got service check from service: '%s'!", service_check.service_description);
     }
 
     return 0;
