@@ -31,11 +31,8 @@ export fn nebmodule_deinit(_: c_int, reason: c_int) c_int {
 }
 
 pub fn handle_service_check_data(_: c_int, data: ?*anyopaque) callconv(.C) c_int {
-
-    if (data) |ndata| {
-        var service_check: *naemon.nebstruct_service_check_data = @ptrCast(@alignCast(ndata));
-        naemon.nm_log(naemon.NSLOG_RUNTIME_ERROR, "Got service check from service: '%s'!", service_check.service_description);
-    }
+    var service_check: *naemon.nebstruct_service_check_data = @ptrCast(@alignCast(data.?));
+    naemon.nm_log(naemon.NSLOG_RUNTIME_ERROR, "Got service check from service: '%s'!", service_check.service_description);
 
     return 0;
 }
