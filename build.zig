@@ -37,6 +37,13 @@ pub fn build(b: *std.Build) void {
 
     //lib.addModule("naemon", naemon_module.createModule());
 
+    const zap = b.dependency("zap", .{
+        .target = target,
+        .optimize = optimize,
+    });
+    lib.addModule("zap", zap.module("zap"));
+    lib.linkLibrary(zap.artifact("facil.io"));
+
     // This declares intent for the library to be installed into the standard
     // location when the user invokes the "install" step (the default step when
     // running zig build).
