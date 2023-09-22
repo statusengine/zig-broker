@@ -63,7 +63,8 @@ Now you are ready to start development
 
 ## Debugger
 
-For debugging, please make sure you have the [Zig Language](https://marketplace.visualstudio.com/items?itemName=ziglang.vscode-zig) extension installed.
+For debugging, please make sure you have the [Zig Language](https://marketplace.visualstudio.com/items?itemName=ziglang.vscode-zig)
+and (C/C++ for Visual Studio Code)[https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools] extension installed.
 Also make sure to install the `Zig Language Server` by pressing `ctrl` + `p` and type: `>Zig Language Server: Install Server`
 
 You can now debug the Zig code
