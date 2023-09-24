@@ -23,6 +23,7 @@ export fn nebmodule_init(_: c_int, _: [*]c_char, handle: *naemon.nebmodule) c_in
 
     _ = naemon.neb_register_callback(naemon.NEBCALLBACK_SERVICE_CHECK_DATA, broker_handle, 0, handle_service_check_data);
 
+    naemon.nm_log(naemon.NSLOG_INFO_MESSAGE, "Start new Webserver Thread");
     server = thread.spawn(.{}, startWebserver, .{}) catch {
         return 1;
     };
@@ -33,6 +34,8 @@ export fn nebmodule_init(_: c_int, _: [*]c_char, handle: *naemon.nebmodule) c_in
 export fn nebmodule_deinit(_: c_int, reason: c_int) c_int {
     _ = naemon.neb_deregister_callback(naemon.NEBCALLBACK_SERVICE_CHECK_DATA, broker_handle);
 
+    naemon.nm_log(naemon.NSLOG_INFO_MESSAGE, "Stop webserver and join thread");
+    zap.stop();
     server.join();
 
     naemon.nm_log(naemon.NSLOG_RUNTIME_ERROR, "bye from zig");
@@ -63,8 +66,10 @@ fn startWebserver() !void {
     // start worker threads
     zap.start(.{
         .threads = 2,
-        .workers = 2,
+        .workers = 1, // TODO If we have more than 1 worker, server.join() will stuck in nebmodule_deinit
     });
+
+    naemon.nm_log(naemon.NSLOG_INFO_MESSAGE, "Return from webserver thread");
 }
 
 fn on_request(r: zap.SimpleRequest) void {
