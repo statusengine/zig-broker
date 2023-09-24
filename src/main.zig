@@ -4,6 +4,7 @@ const zap = @import("zap");
 const thread = std.Thread;
 const semaphore = std.Thread.Semaphore;
 const naemon = @import("./naemon.zig");
+const s = @import("./structs.zig");
 
 export const __neb_api_version: c_int = naemon.CURRENT_NEB_API_VERSION;
 
@@ -11,7 +12,7 @@ var broker_handle: ?*naemon.nebmodule = null;
 var server: std.Thread = undefined;
 
 var lock: std.Thread.Mutex = undefined;
-var latest_service_check: naemon.nebstruct_service_check_data = undefined;
+var latest_service_check: s.service_check_data = undefined;
 
 export fn nebmodule_init(_: c_int, _: [*]c_char, handle: *naemon.nebmodule) c_int {
     broker_handle = handle;
@@ -52,7 +53,8 @@ pub fn handle_service_check_data(_: c_int, data: ?*anyopaque) callconv(.C) c_int
 
     lock.lock();
     defer lock.unlock();
-    latest_service_check = service_check.*;
+
+    latest_service_check = s.service_check_data{ .hostname = service_check.host_name.*, .service_description = service_check.service_description.*, .state = @as(i8, @intCast(service_check.state)) };
 
     return 0;
 }
@@ -82,7 +84,7 @@ fn startWebserver() !void {
 fn on_request(r: zap.SimpleRequest) void {
     r.setStatus(.not_found);
     const alloc = std.heap.page_allocator;
-    const msg = fmt.allocPrint(alloc, "Latest service_check was: {s}", .{latest_service_check.service_description}) catch {
+    const msg = fmt.allocPrint(alloc, "Latest service_check was: {}", .{latest_service_check.service_description}) catch {
         r.setStatus(.internal_server_error);
         r.sendBody("Unable to alloc memory") catch return;
         return;
