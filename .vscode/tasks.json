@@ -2,6 +2,12 @@
     // See https://go.microsoft.com/fwlink/?LinkId=733558
     // for the documentation about the tasks.json format
     "version": "2.0.0",
+    "options": {
+        "env": {
+            "ZIG_PATH": "/usr/local/zig/zig", // Zig installed via README
+            //"ZIG_PATH": "/home/daniel/.vscode-server/data/User/globalStorage/ziglang.vscode-zig/zig_install/zig" // Zig installed via VS Code extension
+        }
+    },
     "tasks": [
 		{
             "label": "download-naemon",
@@ -68,7 +74,7 @@
             // Translate Naemon broker headers to Zig
             "label": "translate-header",
             "type": "shell",
-            "command": "/usr/local/zig/zig translate-c ${cwd}/build/include/naemon/naemon.h -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include -I${cwd}/build/include -I/usr/include -I/usr/include/x86_64-linux-gnu/ > ${cwd}/src/naemon.zig",
+            "command": "\"$ZIG_PATH\" translate-c ${cwd}/build/include/naemon/naemon.h -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include -I${cwd}/build/include -I/usr/include -I/usr/include/x86_64-linux-gnu/ > ${cwd}/src/naemon.zig",
             "problemMatcher": [],
             "group": {
                 "kind": "build",
@@ -114,7 +120,7 @@
 		{
             "label": "build",
             "type": "shell",
-            "command": "/usr/local/zig/zig build",
+            "command": "\"$ZIG_PATH\" build",
             "problemMatcher": [],
             "group": {
                 "kind": "build",
