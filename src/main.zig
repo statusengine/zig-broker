@@ -10,6 +10,9 @@ export const __neb_api_version: c_int = naemon.CURRENT_NEB_API_VERSION;
 var broker_handle: ?*naemon.nebmodule = null;
 var server: std.Thread = undefined;
 
+var lock: std.Thread.Mutex = undefined;
+var latest_service_check: naemon.nebstruct_service_check_data = undefined;
+
 export fn nebmodule_init(_: c_int, _: [*]c_char, handle: *naemon.nebmodule) c_int {
     broker_handle = handle;
 
@@ -25,10 +28,10 @@ export fn nebmodule_init(_: c_int, _: [*]c_char, handle: *naemon.nebmodule) c_in
 
     naemon.nm_log(naemon.NSLOG_INFO_MESSAGE, "Start new Webserver Thread");
     server = thread.spawn(.{}, startWebserver, .{}) catch {
-        return 1;
+        return naemon.ERROR; // -2
     };
 
-    return 0;
+    return naemon.OK;
 }
 
 export fn nebmodule_deinit(_: c_int, reason: c_int) c_int {
@@ -40,12 +43,16 @@ export fn nebmodule_deinit(_: c_int, reason: c_int) c_int {
 
     naemon.nm_log(naemon.NSLOG_RUNTIME_ERROR, "bye from zig");
     _ = reason;
-    return 0;
+    return naemon.OK;
 }
 
 pub fn handle_service_check_data(_: c_int, data: ?*anyopaque) callconv(.C) c_int {
     var service_check: *naemon.nebstruct_service_check_data = @ptrCast(@alignCast(data.?));
     naemon.nm_log(naemon.NSLOG_RUNTIME_ERROR, "Got service check from service: '%s'!", service_check.service_description);
+
+    lock.lock();
+    defer lock.unlock();
+    latest_service_check = service_check.*;
 
     return 0;
 }
@@ -74,5 +81,13 @@ fn startWebserver() !void {
 
 fn on_request(r: zap.SimpleRequest) void {
     r.setStatus(.not_found);
-    r.sendBody("<html><body><h1>404 - File not found</h1></body></html>") catch return;
+    const alloc = std.heap.page_allocator;
+    const msg = fmt.allocPrint(alloc, "Latest service_check was: {s}", .{latest_service_check.service_description}) catch {
+        r.setStatus(.internal_server_error);
+        r.sendBody("Unable to alloc memory") catch return;
+        return;
+    };
+    defer alloc.free(alloc);
+
+    r.sendBody(msg) catch return;
 }
