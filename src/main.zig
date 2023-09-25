@@ -54,6 +54,7 @@ pub fn handle_service_check_data(_: c_int, data: ?*anyopaque) callconv(.C) c_int
     lock.lock();
     defer lock.unlock();
 
+    // todo refactor using std.heap.ArenaAllocator
     latest_service_check = s.service_check_data{
         .hostname = "",
         .service_description = "",
