@@ -100,12 +100,12 @@ fn startWebserver() !void {
 fn on_request(r: zap.SimpleRequest) void {
     r.setStatus(.not_found);
     const alloc = std.heap.page_allocator;
-    const msg = fmt.allocPrint(alloc, "Latest service_check was: {}", .{latest_service_check.service_description}) catch {
+    const msg = fmt.allocPrint(alloc, "Latest service_check was: {s}", .{latest_service_check.service_description}) catch {
         r.setStatus(.internal_server_error);
         r.sendBody("Unable to alloc memory") catch return;
         return;
     };
-    defer alloc.free(alloc);
+    defer alloc.free(msg);
 
     r.sendBody(msg) catch return;
 }
