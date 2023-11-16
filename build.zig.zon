@@ -1,6 +1,7 @@
 .{
     .name = "zig-broker",
     .version = "0.0.1",
+    .paths = .{"src/"},
 
     .dependencies = .{
         // zap v0.1.14-pre

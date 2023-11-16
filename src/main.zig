@@ -55,23 +55,13 @@ pub fn handle_service_check_data(_: c_int, data: ?*anyopaque) callconv(.C) c_int
     defer lock.unlock();
 
     // todo refactor using std.heap.ArenaAllocator
-    latest_service_check = s.service_check_data{
-        .hostname = "",
-        .service_description = "",
-        .state = @as(i8, @intCast(service_check.state)),
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+    const allocator = arena.allocator();
+
+    latest_service_check.host_name = allocator.alloc(u8, service_check.host_name[0..std.mem.len(service_check.host_name)]) catch {
+        unreachable;
     };
-
-    if (service_check.host_name != null) {
-        latest_service_check.hostname = std.heap.c_allocator.dupe(u8, service_check.host_name[0..std.mem.len(service_check.host_name)]) catch {
-            unreachable;
-        };
-    }
-
-    if (service_check.service_description != null) {
-        latest_service_check.service_description = std.heap.c_allocator.dupe(u8, service_check.service_description[0..std.mem.len(service_check.service_description)]) catch {
-            unreachable;
-        };
-    }
 
     return 0;
 }

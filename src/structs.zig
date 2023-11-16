@@ -1,1 +1,50 @@
-pub const service_check_data = struct { hostname: []u8, service_description: []u8, state: i8 };
+pub const struct_timeval = struct {
+    tv_sec: i64,
+    tv_usec: i64,
+};
+
+pub const check_result = struct {
+    object_check_type: i64,
+    host_name: []u8,
+    service_description: []u8,
+    check_type: i64,
+    check_options: i64,
+    scheduled_check: i64,
+    output_file: []u8,
+    //output_file_fp: [*c]FILE,
+    latency: f64,
+    start_time: struct_timeval,
+    finish_time: struct_timeval,
+    early_timeout: i64,
+    exited_ok: i64,
+    return_code: i64,
+    output: []u8,
+};
+
+pub const service_check_data = struct {
+    type: i64,
+    flags: i64,
+    attr: i64,
+    timestamp: struct_timeval,
+    host_name: []u8,
+    service_description: []u8,
+    check_type: i64,
+    current_attempt: i64,
+    max_attempts: i64,
+    state_type: i64,
+    state: i64,
+    timeout: i64,
+    command_name: []u8,
+    command_args: []u8,
+    command_line: []u8,
+    start_time: struct_timeval,
+    end_time: struct_timeval,
+    early_timeout: i64,
+    execution_time: f64,
+    latency: f64,
+    return_code: i64,
+    output: []u8,
+    long_output: []u8,
+    perf_data: []u8,
+    //check_result_ptr: [*c]check_result,
+};
